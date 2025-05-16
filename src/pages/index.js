@@ -25,6 +25,49 @@ const IndexPage = () => {
     navigate('/shop');
   };
 
+  // ------------------ Image Gallery & Admin Logic -------------------
+  const [images, setImages] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('images');
+      return stored ? JSON.parse(stored) : [
+        { img: 'https://via.placeholder.com/150', download: 'https://via.placeholder.com/150' }
+      ];
+    } else {
+      return [];
+    }
+  });
+
+  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [newImageUrl, setNewImageUrl] = React.useState('');
+  const [newDownloadLink, setNewDownloadLink] = React.useState('');
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('images', JSON.stringify(images));
+    }
+  }, [images]);
+
+  const handleAdminLogin = () => {
+    const pwd = prompt('Enter admin password:');
+    if (pwd === 'admin123') {
+      setIsAdmin(true);
+      alert('Admin access granted');
+    } else {
+      alert('Wrong password');
+    }
+  };
+
+  const addImage = () => {
+    if (newImageUrl && newDownloadLink) {
+      setImages([...images, { img: newImageUrl, download: newDownloadLink }]);
+      setNewImageUrl('');
+      setNewDownloadLink('');
+    } else {
+      alert('Please enter both Image URL and Download Link');
+    }
+  };
+  // --------------------------------------------------------------------
+
   return (
     <Layout disablePaddingBottom>
       {/* Hero Container */}
@@ -141,6 +184,43 @@ const IndexPage = () => {
         </div>
       </div>
       <AttributeGrid />
+
+      {/* ---------------- Custom Image Gallery Section ---------------- */}
+      <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+        <h2>Image Gallery</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          {images.map((item, index) => (
+            <div key={index} style={{ margin: '10px', padding: '10px', border: '1px solid #ccc', textAlign: 'center' }}>
+              <img src={item.img} alt={`Image ${index}`} width="200" /><br />
+              <a href={item.download} download>Download</a>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={handleAdminLogin} style={{ marginTop: '20px' }}>Admin Login</button>
+
+        {isAdmin && (
+          <div style={{ marginTop: '20px' }}>
+            <h3>Add New Image</h3>
+            <input
+              type="text"
+              placeholder="Image URL"
+              value={newImageUrl}
+              onChange={e => setNewImageUrl(e.target.value)}
+              style={{ width: '300px', marginBottom: '10px' }}
+            /><br />
+            <input
+              type="text"
+              placeholder="Download Link"
+              value={newDownloadLink}
+              onChange={e => setNewDownloadLink(e.target.value)}
+              style={{ width: '300px', marginBottom: '10px' }}
+            /><br />
+            <button onClick={addImage}>Add Image</button>
+          </div>
+        )}
+      </div>
+      {/* -------------------------------------------------------------- */}
     </Layout>
   );
 };
